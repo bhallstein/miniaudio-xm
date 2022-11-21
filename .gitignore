@@ -1,0 +1,7 @@
+.DS_Store
+.vscode
+temp
+example/a.out
+example/xmds
+miniaudio
+jar
