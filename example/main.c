@@ -1,6 +1,6 @@
 #define MINIAUDIO_IMPLEMENTATION
 #define JAR_XM_IMPLEMENTATION
-#define XM_DATA_SOURCE_IMPLEMENTATION
+#define XMDS_IMPLEMENTATION
 #include "xm-data-source.h"
 
 #include <stdio.h>
@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
   ma_sound_start(&sound);
 
   do {
-    sleep(1);
+    ma_sleep(1000);
   } while (!ma_sound_at_end(&sound));
 
   xm_data_source_uninit(&xmds);

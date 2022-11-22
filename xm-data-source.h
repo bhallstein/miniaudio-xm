@@ -4,21 +4,22 @@
 #include "miniaudio.h"
 #include "jar_xm.h"
 
-struct jar_xm_context_s;
-
 typedef struct xm_data_source {
   ma_data_source_base base;
   float *buffer;
-  size_t curFrame;
+  size_t curFrame;  // Could possibly use jar-xm ctx properties instead
   size_t nFrames;
-  struct jar_xm_context_s* jarxmctx;
+  jar_xm_context_t* jarxmctx;
 } xm_data_source;
 
 ma_result xm_data_source_init_file(const char* pFilePath, xm_data_source* pXMDS);
 void xm_data_source_uninit(xm_data_source* pXMDS);
 
 
-#ifdef XM_DATA_SOURCE_IMPLEMENTATION
+#ifdef XMDS_IMPLEMENTATION
+
+int XMDS_SAMPLE_RATE = 48000;
+int XMDS_CHANNELS = 2;
 
 ma_result xm_data_source_read(
   ma_data_source* pDataSource,
@@ -65,16 +66,21 @@ static ma_result xm_data_source_get_data_format(
 ) {
   xm_data_source* pXMDS = (xm_data_source*)pDataSource;
 
-  if (pFormat != NULL) { *pFormat = ma_format_f32; }
-  if (pChannels != NULL) { *pChannels = 2; }
-  if (pSampleRate != NULL) { *pSampleRate = 48000; }
+  if (pFormat != NULL) {
+    *pFormat = ma_format_f32;
+  }
+  if (pChannels != NULL) {
+    *pChannels = XMDS_CHANNELS;
+  }
+  if (pSampleRate != NULL) {
+    *pSampleRate = XMDS_SAMPLE_RATE;
+  }
   if (pChannelMap != NULL) {
-    MA_ZERO_MEMORY(pChannelMap, sizeof(*pChannelMap) * channelMapCap);
+    ma_channel_map_init_standard(ma_standard_channel_map_default, pChannelMap, channelMapCap, *pChannels);
   }
   if (pDataSource == NULL) {
     return MA_INVALID_OPERATION;
   }
-  ma_channel_map_init_standard(ma_standard_channel_map_default, pChannelMap, channelMapCap, *pChannels);
 
   return MA_SUCCESS;
 }
@@ -84,13 +90,23 @@ static ma_result xm_data_source_seek(ma_data_source* pDataSource, ma_uint64 fram
 }
 
 static ma_result xm_data_source_get_cursor(ma_data_source* pDataSource, ma_uint64* pCursor) {
-  *pCursor = 0;
-  return MA_NOT_IMPLEMENTED;
+  if (pDataSource == NULL || pCursor == NULL) {
+    return MA_INVALID_ARGS;
+  }
+
+  xm_data_source* pXMDS = (xm_data_source*) pDataSource;
+  *pCursor = pXMDS->curFrame;
+  return MA_SUCCESS;
 }
 
 static ma_result xm_data_source_get_length(ma_data_source* pDataSource, ma_uint64* pLength) {
-  *pLength = 0;
-  return MA_NOT_IMPLEMENTED;
+  if (pLength == NULL || pDataSource == NULL) {
+    return MA_INVALID_ARGS;
+  }
+
+  xm_data_source* pXMDS = (xm_data_source*) pDataSource;
+  *pLength = pXMDS->nFrames;
+  return MA_SUCCESS;
 }
 
 static ma_data_source_vtable g_xm_data_source_vtable = {
@@ -123,7 +139,7 @@ ma_result xm_data_source_init_file(
     return result;
   }
 
-  int jar_result = jar_xm_create_context_from_file(&pXMDS->jarxmctx, 48000, pFilePath);
+  int jar_result = jar_xm_create_context_from_file(&pXMDS->jarxmctx, XMDS_SAMPLE_RATE, pFilePath);
   if (jar_result != 0) {
     return MA_ERROR;
   }

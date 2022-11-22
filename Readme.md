@@ -37,13 +37,13 @@ if (result != MA_SUCCESS) {
 ma_sound_start(&sound);
 ```
 
-Miniaudio, jar, and miniaudio-xm are header-only. Exactly one .c (or .cpp) file must include the implementation directives:
+Miniaudio, jar, and miniaudio-xm are header-only. **Exactly one** .c (or .cpp) file must include the implementation directives:
 
 ```c
 #define MINIAUDIO_IMPLEMENTATION
 #define JAR_XM_IMPLEMENTATION
-#define XM_DATA_SOURCE_IMPLEMENTATION
+#define XMDS_IMPLEMENTATION
 ```
 
-Code review or suggestions welcome :)
+Code review/suggestions/pulls welcome :)
 
