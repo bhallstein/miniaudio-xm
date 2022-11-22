@@ -25,13 +25,13 @@ int main(int argc, char** argv) {
   xm_data_source xmds;
   result = xm_data_source_init_file(argv[1], &xmds);
   if (result != MA_SUCCESS) {
-    printf("x1\n");
+    printf("Failed to initialize data source\n");
     return 1;
   }
 
   result = ma_sound_init_from_data_source(&engine, &xmds, 0, NULL, &sound);
   if (result != MA_SUCCESS) {
-    printf("x2\n");
+    printf("Failed to initialize sound\n");
     return 1;
   }
 
